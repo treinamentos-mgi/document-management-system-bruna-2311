@@ -11,16 +11,22 @@ async function request(path, options) {
 
 export async function listDocuments() {
   const response = await request('/documents');
-  const { documents } = await response.json();
-  return documents;
+  const body = await response.json();
+  if (!Array.isArray(body?.documents)) {
+    throw new Error('Resposta inválida ao carregar os documentos.');
+  }
+  return body.documents;
 }
 
 export async function uploadDocument(file) {
   const formData = new FormData();
   formData.append('file', file);
   const response = await request('/upload', { method: 'POST', body: formData });
-  const { document } = await response.json();
-  return document;
+  const body = await response.json();
+  if (!body?.document) {
+    throw new Error('Resposta inválida ao enviar o documento.');
+  }
+  return body.document;
 }
 
 export async function downloadDocument(id) {

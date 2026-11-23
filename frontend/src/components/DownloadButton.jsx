@@ -14,8 +14,10 @@ export default function DownloadButton({ document }) {
       const link = window.document.createElement('a');
       link.href = url;
       link.download = document.originalName;
+      window.document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(url);
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (downloadError) {
       setError(downloadError.message || 'Não foi possível baixar o documento.');
     } finally {

@@ -18,7 +18,15 @@ function findByIdAndOwner(id, owner) {
 }
 
 function getFilePath(storageKey) {
-  return path.join(storagePath, storageKey);
+  if (typeof storageKey !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storageKey)) {
+    throw new Error('Chave de armazenamento inválida.');
+  }
+
+  const filePath = path.resolve(storagePath, storageKey);
+  if (path.dirname(filePath) !== storagePath) {
+    throw new Error('Chave de armazenamento fora do diretório permitido.');
+  }
+  return filePath;
 }
 
 function removeFile(storageKey) {

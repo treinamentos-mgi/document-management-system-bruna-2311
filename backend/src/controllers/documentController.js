@@ -22,7 +22,12 @@ function list(req, res) {
 }
 
 function download(req, res) {
-  const document = documentService.findDocument(req.params.id);
+  let document;
+  try {
+    document = documentService.findDocument(req.params.id);
+  } catch (error) {
+    return sendError(res, 500, 'DOWNLOAD_ERROR', 'Não foi possível baixar o documento.');
+  }
   if (!document) {
     return sendError(res, 404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.');
   }

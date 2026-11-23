@@ -26,9 +26,9 @@ Entregar uma aplicação web de usuário único para enviar, listar e baixar doc
 
 ### Premissas e limites conhecidos
 
-- Esta especificação descreve o comportamento-alvo. No estado atual, o backend é um seed Express com `GET /health`; as rotas de documentos ainda não estão implementadas.
+- O backend implementa as rotas de documentos e mantém `GET /health` para verificação de saúde.
 - A aplicação é para uma instalação local ou ambiente confiável de usuário único. Sem autenticação, não deve ser exposta a usuários não confiáveis.
-- `DMS_OWNER_ID` é uma variável de ambiente proposta para identificar o dono dos documentos. Seu valor deve ser estável durante a execução; o nome definitivo da variável e o comportamento quando ausente devem ser confirmados antes da implementação.
+- `DMS_OWNER_ID` identifica o dono dos documentos e é lido na inicialização. Quando ausente ou vazio, o valor padrão é `local-user`.
 - O upload aceita um arquivo no campo `file`. Não há política definida para tamanho máximo ou tipos de arquivo. Esses limites devem ser decididos antes de disponibilizar o serviço fora de um ambiente local controlado; não se deve interpretar a ausência de regra como autorização para uploads ilimitados.
 - O prefixo `/api` é usado pelo frontend através do proxy de desenvolvimento do Vite. Os caminhos definidos abaixo são os caminhos da API no backend, sem esse prefixo.
 
@@ -87,7 +87,7 @@ O repositório mantém os metadados em uma coleção em memória e relaciona cad
 
 ## 6. Contratos de API
 
-Os contratos abaixo são propostos para orientar a implementação; não representam endpoints já disponíveis. Os exemplos usam os caminhos do backend. No frontend em desenvolvimento, o proxy do Vite recebe chamadas em `/api` e remove esse prefixo antes de encaminhá-las ao backend.
+Os exemplos usam os caminhos do backend. No frontend em desenvolvimento, o proxy do Vite recebe chamadas em `/api` e remove esse prefixo antes de encaminhá-las ao backend.
 
 ### `POST /upload`
 
@@ -194,13 +194,13 @@ O proxy existente do Vite encaminha `/api` ao servidor local e remove o prefixo.
 - **Repositories (`repositories/`)**: encapsulam a escrita/leitura de arquivos locais e a coleção de metadados em memória. Multer deve usar `diskStorage` para escrever sob `backend/storage`, com nome interno gerado pelo sistema.
 - **Dependências**: `routes -> controllers -> services -> repositories`; services e repositories não devem depender de Express ou React.
 - **Frontend**: componentes funcionais React organizados conforme as pastas existentes (`components/`, `pages/`, `services/`); chamadas à API via `fetch` e prefixo `/api` no ambiente Vite.
-- **Configuração**: `PORT` controla a porta HTTP; `DMS_OWNER_ID` fornece a identidade estável do usuário local. O comportamento para variável ausente deve ser definido antes da implementação, preferencialmente com falha de inicialização clara em vez de owner ambíguo.
+- **Configuração**: `PORT` controla a porta HTTP; `DMS_OWNER_ID` fornece a identidade estável do usuário local e usa `local-user` quando ausente ou vazio.
 - **Persistência**: conteúdo em disco e metadados em memória são deliberadamente distintos. O MVP não reconstrói metadados no boot e não apaga automaticamente arquivos órfãos.
 - **Segurança e exposição**: sem login, o isolamento por `owner` não equivale a autenticação. O serviço deve ser usado apenas por um único usuário em ambiente confiável; suporte a usuários múltiplos exige uma especificação de identidade e autorização separada.
 
 ## 8. Plano de execução
 
-As etapas abaixo descrevem trabalho futuro de produto e implementação; nenhuma delas faz parte da criação desta especificação.
+As etapas abaixo registram o plano original; a API de documentos do backend já foi implementada. O frontend e as políticas de limites de upload permanecem pendentes.
 
 1. Confirmar política de identidade local, comportamento de inicialização sem `DMS_OWNER_ID` e limites de tamanho/tipo do upload.
 2. Implementar os contratos da API e a configuração de upload local com Multer `diskStorage`, nome interno gerado e tratamento de falhas de gravação.
